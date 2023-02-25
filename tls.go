@@ -34,7 +34,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/pires/go-proxyproto"
 	"golang.org/x/crypto/curve25519"
 	"golang.org/x/crypto/hkdf"
 )
@@ -136,18 +135,7 @@ func Server(ctx context.Context, conn net.Conn, config *Config) (*Conn, error) {
 		return nil, errors.New("REALITY: failed to dial dest: " + err.Error())
 	}
 
-	if config.Xver == 1 || config.Xver == 2 {
-		if _, err = proxyproto.HeaderProxyFromAddrs(config.Xver, conn.RemoteAddr(), conn.LocalAddr()).WriteTo(target); err != nil {
-			target.Close()
-			conn.Close()
-			return nil, errors.New("REALITY: failed to send PROXY protocol: " + err.Error())
-		}
-	}
-
 	underlying := conn
-	if pc, ok := underlying.(*proxyproto.Conn); ok {
-		underlying = pc.Raw()
-	}
 
 	hs := serverHandshakeStateTLS13{ctx: context.TODO()}
 
